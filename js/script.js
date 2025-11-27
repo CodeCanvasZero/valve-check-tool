@@ -30,12 +30,12 @@ function refreshTotalCount() {
     setTimeout(() => {
         btn.textContent = originalText;
         btn.disabled = false;
-        showTempMessage('总次数已刷新', 'success');
+        showTempMessage('总次数已刷新', 'warning'); // 改为warning，显示黄色
     }, 1000);
 }
 
-// 显示临时消息（恢复原来的样式）
-function showTempMessage(message, type = 'success') {
+// 显示临时消息（恢复原来的黄色）
+function showTempMessage(message, type = 'warning') {
     const existingMsg = document.getElementById('tempMessage');
     if (existingMsg) {
         existingMsg.remove();
@@ -115,7 +115,7 @@ function handleSecretClick() {
             clearTimeout(secretClickTimer);
         }
         viewGitHubStats();
-        showTempMessage('🎉 恭喜你发现了隐藏功能！', 'success');
+        showTempMessage('🎉 恭喜你发现了隐藏功能！', 'warning'); // 改为warning，显示黄色
     }
 }
 
@@ -134,7 +134,7 @@ function showSecretClickFeedback() {
         
         // 如果是第8次，给予提示
         if (secretClickCount === 8) {
-            showTempMessage(`已点击 ${secretClickCount} 次，继续努力！`, 'info');
+            showTempMessage(`已点击 ${secretClickCount} 次，继续努力！`, 'warning'); // 改为warning，显示黄色
         }
     }
 }
@@ -251,7 +251,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (confirm('确定要重置你的使用次数吗？总次数不会重置。')) {
             localStorage.setItem('valveCheckLocalUsage', '0');
             document.getElementById('localCount').textContent = '0';
-            showTempMessage('你的使用次数已重置为 0', 'success');
+            showTempMessage('你的使用次数已重置为 0', 'warning'); // 改为warning，显示黄色
         }
     });
 });
