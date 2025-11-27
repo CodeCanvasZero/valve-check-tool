@@ -8,6 +8,10 @@ let localUsageCount = 0;    // 当前用户的使用次数
 let totalUsageCount = 0;    // 所有用户的总使用次数（本地缓存）
 let lastGitHubCount = 0;    // 最后一次从GitHub获取的计数
 
+// 秘密统计按钮功能
+let secretClickCount = 0;
+let secretClickTimer = null;
+
 // 初始化使用次数
 function initUsageCount() {
     // 当前用户的使用次数
@@ -209,6 +213,64 @@ function resetMyCount() {
     }
 }
 
+// 初始化秘密按钮功能
+function initSecretButton() {
+    const secretBtn = document.getElementById('secretStatsBtn');
+    if (secretBtn) {
+        secretBtn.addEventListener('click', handleSecretClick);
+    }
+}
+
+// 处理秘密按钮点击
+function handleSecretClick() {
+    secretClickCount++;
+    
+    // 清除之前的计时器
+    if (secretClickTimer) {
+        clearTimeout(secretClickTimer);
+    }
+    
+    // 设置新的计时器（5秒内有效）
+    secretClickTimer = setTimeout(() => {
+        secretClickCount = 0;
+        console.log('秘密点击计数已重置');
+    }, 5000);
+    
+    // 显示点击反馈
+    showSecretClickFeedback();
+    
+    // 检查是否达到10次
+    if (secretClickCount >= 10) {
+        // 达到10次，执行跳转
+        secretClickCount = 0;
+        if (secretClickTimer) {
+            clearTimeout(secretClickTimer);
+        }
+        viewGitHubStats();
+        showTempMessage('🎉 恭喜你发现了隐藏功能！', 'success');
+    }
+}
+
+// 显示秘密点击反馈
+function showSecretClickFeedback() {
+    const secretBtn = document.getElementById('secretStatsBtn');
+    if (secretBtn) {
+        // 添加点击动画效果
+        secretBtn.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            secretBtn.style.transform = 'scale(1)';
+        }, 150);
+        
+        // 在控制台显示点击次数（仅开发者可见）
+        console.log(`秘密点击: ${secretClickCount}/10`);
+        
+        // 如果是第5次，给予提示
+        if (secretClickCount === 5) {
+            showTempMessage(`已点击 ${secretClickCount} 次，继续努力！`, 'info');
+        }
+    }
+}
+
 /**
  * 阀体产品检测函数
  * @param {string} partNumber 零件号
@@ -308,6 +370,9 @@ function reset() {
 document.addEventListener('DOMContentLoaded', function() {
     // 初始化使用次数
     initUsageCount();
+    
+    // 初始化秘密按钮功能
+    initSecretButton();
     
     // 支持回车键检测
     document.getElementById('partNumber').addEventListener('keypress', function(e) {
