@@ -10,8 +10,9 @@
 - v1.4.0 : 添加使用统计
 - v1.0.0 : 初始版本发布
 
-## 使用统计
 
+## 使用统计
+查看详细统计：https://github.com/CodeCanvasZero/valve-check-tool/issues/1
 
 ## 部署地址
-
+https://codecanvaszero.github.io/valve-check-tool/
