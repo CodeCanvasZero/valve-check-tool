@@ -239,8 +239,8 @@ function handleSecretClick() {
     // 显示点击反馈
     showSecretClickFeedback();
     
-    // 检查是否达到10次
-    if (secretClickCount >= 10) {
+    // 检查是否达到12次
+    if (secretClickCount >= 12) {
         // 达到10次，执行跳转
         secretClickCount = 0;
         if (secretClickTimer) {
@@ -264,8 +264,8 @@ function showSecretClickFeedback() {
         // 在控制台显示点击次数（仅开发者可见）
         console.log(`秘密点击: ${secretClickCount}/10`);
         
-        // 如果是第5次，给予提示
-        if (secretClickCount === 5) {
+        // 如果是第8次，给予提示
+        if (secretClickCount === 8) {
             showTempMessage(`已点击 ${secretClickCount} 次，继续努力！`, 'info');
         }
     }
