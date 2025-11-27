@@ -335,6 +335,7 @@ function 阀体产品检测(partNumber, customerName, productName) {
     return result;
 }
 
+
 // 检测函数
 function check() {
     const partNumber = document.getElementById('partNumber').value.trim();
