@@ -30,26 +30,112 @@ function refreshTotalCount() {
     setTimeout(() => {
         btn.textContent = originalText;
         btn.disabled = false;
-        alert('总次数已刷新！');
+        showTempMessage('总次数已刷新', 'success');
     }, 1000);
 }
 
-// 秘密按钮功能
-function initSecretButton() {
-    let clickCount = 0;
-    const secretBtn = document.getElementById('secretStatsBtn');
+// 显示临时消息（恢复原来的样式）
+function showTempMessage(message, type = 'success') {
+    const existingMsg = document.getElementById('tempMessage');
+    if (existingMsg) {
+        existingMsg.remove();
+    }
     
-    if (secretBtn) {
-        secretBtn.addEventListener('click', function() {
-            clickCount++;
-            
-            if (clickCount >= 5) {
-                clickCount = 0;
-                alert('🎉 恭喜你发现了隐藏功能！\n总使用次数会自动保存，你可以随时查看。');
-            } else {
-                alert(`继续点击！还差 ${5 - clickCount} 次`);
+    const msgElement = document.createElement('div');
+    msgElement.id = 'tempMessage';
+    msgElement.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: ${type === 'success' ? '#28a745' : type === 'warning' ? '#ffc107' : '#17a2b8'};
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        z-index: 1000;
+        font-size: 14px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    `;
+    msgElement.textContent = message;
+    
+    document.body.appendChild(msgElement);
+    
+    setTimeout(() => {
+        msgElement.style.opacity = '0';
+        msgElement.style.transform = 'translateX(-50%) translateY(-20px)';
+        setTimeout(() => {
+            if (msgElement.parentNode) {
+                msgElement.remove();
             }
-        });
+        }, 300);
+    }, 3000);
+}
+
+// 查看 GitHub 统计（原来的功能）
+function viewGitHubStats() {
+    window.open(`https://github.com/CodeCanvasZero/valve-check-tool/issues/1`, '_blank');
+}
+
+// 秘密按钮点击计数（恢复原来的功能）
+let secretClickCount = 0;
+let secretClickTimer = null;
+
+// 初始化秘密按钮功能
+function initSecretButton() {
+    const secretBtn = document.getElementById('secretStatsBtn');
+    if (secretBtn) {
+        secretBtn.addEventListener('click', handleSecretClick);
+    }
+}
+
+// 处理秘密按钮点击（恢复原来的功能）
+function handleSecretClick() {
+    secretClickCount++;
+    
+    // 清除之前的计时器
+    if (secretClickTimer) {
+        clearTimeout(secretClickTimer);
+    }
+    
+    // 设置新的计时器（5秒内有效）
+    secretClickTimer = setTimeout(() => {
+        secretClickCount = 0;
+        console.log('秘密点击计数已重置');
+    }, 5000);
+    
+    // 显示点击反馈
+    showSecretClickFeedback();
+    
+    // 检查是否达到20次
+    if (secretClickCount >= 20) {
+        // 达到20次，执行跳转
+        secretClickCount = 0;
+        if (secretClickTimer) {
+            clearTimeout(secretClickTimer);
+        }
+        viewGitHubStats();
+        showTempMessage('🎉 恭喜你发现了隐藏功能！', 'success');
+    }
+}
+
+// 显示秘密点击反馈（恢复原来的功能）
+function showSecretClickFeedback() {
+    const secretBtn = document.getElementById('secretStatsBtn');
+    if (secretBtn) {
+        // 添加点击动画效果
+        secretBtn.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            secretBtn.style.transform = 'scale(1)';
+        }, 150);
+        
+        // 在控制台显示点击次数（仅开发者可见）
+        console.log(`秘密点击: ${secretClickCount}/20`);
+        
+        // 如果是第8次，给予提示
+        if (secretClickCount === 8) {
+            showTempMessage(`已点击 ${secretClickCount} 次，继续努力！`, 'info');
+        }
     }
 }
 
@@ -156,6 +242,16 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('partNumber').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             check();
+        }
+    });
+    
+    // 添加右键菜单重置使用次数（开发者功能）
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        if (confirm('确定要重置你的使用次数吗？总次数不会重置。')) {
+            localStorage.setItem('valveCheckLocalUsage', '0');
+            document.getElementById('localCount').textContent = '0';
+            showTempMessage('你的使用次数已重置为 0', 'success');
         }
     });
 });
