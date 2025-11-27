@@ -1,12 +1,12 @@
 // GitHub Issues 计数配置
-// ⚠️ 重要：请根据你的实际情况修改下面的配置
-const GITHUB_OWNER = 'CodeCanvasZero';    // 你的 GitHub 用户名
-const GITHUB_REPO = 'valve-check-tool';   // 你的仓库名
-const ISSUE_NUMBER = 1;                   // 统计 Issue 的编号
+const GITHUB_OWNER = 'CodeCanvasZero';
+const GITHUB_REPO = 'valve-check-tool';
+const ISSUE_NUMBER = 1;
 
 // 使用次数记录功能
 let localUsageCount = 0;    // 当前用户的使用次数
-let totalUsageCount = 0;    // 所有用户的总使用次数
+let totalUsageCount = 0;    // 所有用户的总使用次数（本地缓存）
+let lastGitHubCount = 0;    // 最后一次从GitHub获取的计数
 
 // 初始化使用次数
 function initUsageCount() {
@@ -16,16 +16,17 @@ function initUsageCount() {
         localUsageCount = parseInt(savedLocal);
     }
     
-    // 总使用次数（从本地存储作为缓存）
+    // 从本地存储获取总次数缓存
     const savedTotal = localStorage.getItem('valveCheckTotalUsage');
     if (savedTotal) {
         totalUsageCount = parseInt(savedTotal);
+        lastGitHubCount = totalUsageCount;
     }
     
     updateUsageDisplay();
     
-    // 页面加载时从 GitHub 获取最新总次数
-    getGitHubUsageCount();
+    // 静默从 GitHub 获取最新次数（不阻塞页面加载）
+    setTimeout(getGitHubUsageCount, 1000);
 }
 
 // 更新显示
@@ -39,70 +40,61 @@ function updateUsageDisplay() {
 
 // 记录使用次数到 GitHub Issue
 function recordToGitHub() {
-    // 使用 setTimeout 避免阻塞用户操作
+    // 先更新本地显示
+    totalUsageCount++;
+    localStorage.setItem('valveCheckTotalUsage', totalUsageCount.toString());
+    updateUsageDisplay();
+    
+    // 然后异步更新 GitHub
     setTimeout(() => {
         fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues/${ISSUE_NUMBER}`)
             .then(response => {
-                if (!response.ok) {
-                    throw new Error('GitHub API 请求失败');
-                }
+                if (!response.ok) throw new Error('GitHub API 请求失败');
                 return response.json();
             })
             .then(issue => {
                 const body = issue.body;
-                // 从内容中提取当前计数
                 const countMatch = body.match(/当前使用次数：(\d+)/);
-                let currentCount = countMatch ? parseInt(countMatch[1]) : 0;
+                let currentCount = countMatch ? parseInt(countMatch[1]) : totalUsageCount;
                 currentCount++;
                 
-                // 更新 Issue 内容
                 const newBody = body.replace(
                     /当前使用次数：\d+/,
                     `当前使用次数：${currentCount}`
                 );
                 
-                // 添加使用记录
                 const timestamp = new Date().toLocaleString('zh-CN');
                 const updatedBody = newBody + `\n\n---\n✅ 使用记录：${timestamp}`;
                 
-                // 更新 Issue
                 return fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues/${ISSUE_NUMBER}`, {
                     method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        body: updatedBody
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ body: updatedBody })
                 });
             })
             .then(response => {
-                if (!response.ok) {
-                    throw new Error('更新 Issue 失败');
-                }
+                if (!response.ok) throw new Error('更新 Issue 失败');
                 return response.json();
             })
             .then(updatedIssue => {
                 console.log('✅ 使用次数已记录到 GitHub');
-                // 更新页面显示
+                // 更新本地缓存为 GitHub 的实际值
                 const countMatch = updatedIssue.body.match(/当前使用次数：(\d+)/);
                 if (countMatch) {
-                    totalUsageCount = parseInt(countMatch[1]);
+                    const githubCount = parseInt(countMatch[1]);
+                    totalUsageCount = Math.max(totalUsageCount, githubCount);
                     localStorage.setItem('valveCheckTotalUsage', totalUsageCount.toString());
                     updateUsageDisplay();
                 }
             })
             .catch(error => {
-                console.log('⚠️ GitHub 记录失败，使用本地计数:', error.message);
-                // 失败时使用本地计数
-                totalUsageCount++;
-                localStorage.setItem('valveCheckTotalUsage', totalUsageCount.toString());
-                updateUsageDisplay();
+                console.log('⚠️ GitHub 记录失败，使用本地计数');
+                // 保持本地计数，下次成功时再同步
             });
-    }, 100);
+    }, 500);
 }
 
-// 从 GitHub Issue 获取最新使用次数
+// 从 GitHub Issue 获取最新使用次数（增强版）
 function getGitHubUsageCount() {
     const totalElement = document.getElementById('totalCount');
     if (totalElement) {
@@ -111,43 +103,84 @@ function getGitHubUsageCount() {
     
     fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues/${ISSUE_NUMBER}`)
         .then(response => {
-            if (!response.ok) {
-                throw new Error('GitHub API 请求失败');
-            }
+            if (!response.ok) throw new Error('GitHub API 请求失败');
             return response.json();
         })
         .then(issue => {
             const countMatch = issue.body.match(/当前使用次数：(\d+)/);
             if (countMatch) {
-                totalUsageCount = parseInt(countMatch[1]);
+                const githubCount = parseInt(countMatch[1]);
+                lastGitHubCount = githubCount;
+                
+                // 使用 GitHub 计数和本地计数中的较大值
+                totalUsageCount = Math.max(totalUsageCount, githubCount);
                 localStorage.setItem('valveCheckTotalUsage', totalUsageCount.toString());
                 updateUsageDisplay();
+                
+                console.log('✅ 从 GitHub 获取最新次数:', githubCount);
+                showTempMessage('统计数据已更新', 'success');
             }
         })
         .catch(error => {
-            console.log('无法从 GitHub 获取最新次数:', error.message);
-            if (totalElement) {
-                totalElement.textContent = '获取失败';
-            }
+            console.log('⚠️ 无法从 GitHub 获取最新次数，使用本地缓存');
+            // 使用本地缓存值
+            updateUsageDisplay();
+            showTempMessage('使用本地缓存数据', 'warning');
         });
 }
 
-// 手动刷新总次数
+// 手动刷新总次数（增强版）
 function refreshTotalCount() {
     const refreshBtn = document.getElementById('refreshBtn');
-    if (refreshBtn) {
-        refreshBtn.textContent = '刷新中...';
-        refreshBtn.disabled = true;
-    }
+    const originalText = refreshBtn.textContent;
+    
+    refreshBtn.textContent = '刷新中...';
+    refreshBtn.disabled = true;
     
     getGitHubUsageCount();
     
     setTimeout(() => {
-        if (refreshBtn) {
-            refreshBtn.textContent = '🔄 刷新总次数';
-            refreshBtn.disabled = false;
-        }
+        refreshBtn.textContent = originalText;
+        refreshBtn.disabled = false;
     }, 2000);
+}
+
+// 显示临时消息
+function showTempMessage(message, type = 'success') {
+    const existingMsg = document.getElementById('tempMessage');
+    if (existingMsg) {
+        existingMsg.remove();
+    }
+    
+    const msgElement = document.createElement('div');
+    msgElement.id = 'tempMessage';
+    msgElement.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: ${type === 'success' ? '#28a745' : '#ffc107'};
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        z-index: 1000;
+        font-size: 14px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    `;
+    msgElement.textContent = message;
+    
+    document.body.appendChild(msgElement);
+    
+    setTimeout(() => {
+        msgElement.style.opacity = '0';
+        msgElement.style.transform = 'translateX(-50%) translateY(-20px)';
+        setTimeout(() => {
+            if (msgElement.parentNode) {
+                msgElement.remove();
+            }
+        }, 300);
+    }, 3000);
 }
 
 // 查看 GitHub 统计
@@ -160,7 +193,7 @@ function incrementUsageCount() {
     localUsageCount++;
     localStorage.setItem('valveCheckLocalUsage', localUsageCount.toString());
     
-    // 记录到 GitHub Issue
+    // 记录到 GitHub
     recordToGitHub();
     
     updateUsageDisplay();
@@ -172,7 +205,7 @@ function resetMyCount() {
         localUsageCount = 0;
         localStorage.setItem('valveCheckLocalUsage', '0');
         updateUsageDisplay();
-        alert('你的使用次数已重置为 0');
+        showTempMessage('你的使用次数已重置为 0', 'success');
     }
 }
 
@@ -273,15 +306,17 @@ function reset() {
 
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', function() {
+    // 初始化使用次数
     initUsageCount();
     
+    // 支持回车键检测
     document.getElementById('partNumber').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             check();
         }
     });
     
-    // 右键点击可重置个人计数
+    // 添加右键菜单重置使用次数（开发者功能）
     document.addEventListener('contextmenu', function(e) {
         e.preventDefault();
         resetMyCount();
