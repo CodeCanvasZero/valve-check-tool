@@ -239,9 +239,9 @@ function handleSecretClick() {
     // 显示点击反馈
     showSecretClickFeedback();
     
-    // 检查是否达到12次
-    if (secretClickCount >= 12) {
-        // 达到10次，执行跳转
+    // 检查是否达到20次
+    if (secretClickCount >= 20) {
+        // 达到20次，执行跳转
         secretClickCount = 0;
         if (secretClickTimer) {
             clearTimeout(secretClickTimer);
