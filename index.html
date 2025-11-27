@@ -39,10 +39,19 @@
         
         <div class="footer">
             <p><strong>阀体检测工具</strong></p>
-            <p>版本：v1.2.0 | 更新日期：2025-11-26 | 本地使用：<span id="usageCount">0</span></p>
-            <p><a href="https://api.countapi.xyz/get/valve-check-tool/usage" target="_blank" style="color: #007bff; text-decoration: none;">
-                📊 点击查看总使用次数
-            </a></p>
+            <p>版本：v1.4.0 | 更新日期：2025-11-26</p>
+            <p>
+                📊 总使用次数：<span id="totalCount">加载中...</span> 次 | 
+                💻 你的使用：<span id="localCount">0</span> 次
+            </p>
+            <p>
+                <button id="refreshBtn" onclick="refreshTotalCount()" style="padding: 5px 10px; font-size: 12px; background: #6c757d; color: white; border: none; border-radius: 3px; cursor: pointer; margin: 5px;">
+                    🔄 刷新总次数
+                </button>
+                <button onclick="viewGitHubStats()" style="padding: 5px 10px; font-size: 12px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; margin: 5px;">
+                    📈 查看详细统计
+                </button>
+            </p>
             <p>作者：锦鲤附体 | 技术支持：</p>
             <p>使用说明：输入零件号后点击"检测"，系统将自动判断是否需要打铅封孔和铭牌孔。</p>
             <p>注意事项：请确保输入的零件号准确无误，如检测结果为红色警示，请联系技术支持。</p>
