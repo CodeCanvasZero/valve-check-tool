@@ -35,6 +35,32 @@ function resetUsageCount() {
     }
 }
 
+// 记录全局使用次数
+function recordGlobalUsage() {
+    // 使用免费的计数API
+    fetch('https://api.countapi.xyz/hit/valve-check-tool/usage')
+        .then(response => response.json())
+        .then(data => {
+            console.log('总使用次数:', data.value);
+        })
+        .catch(err => {
+            console.log('计数服务暂时不可用');
+        });
+}
+
+// 获取总使用次数（用于显示）
+function getGlobalUsage() {
+    fetch('https://api.countapi.xyz/get/valve-check-tool/usage')
+        .then(response => response.json())
+        .then(data => {
+            console.log('当前总使用次数:', data.value);
+            // 可以在这里更新页面显示
+        })
+        .catch(err => {
+            console.log('无法获取总使用次数');
+        });
+}
+
 /**
  * 阀体产品检测函数
  * @param {string} partNumber 零件号
@@ -78,7 +104,7 @@ function 阀体产品检测(partNumber, customerName, productName) {
     
     // --- 检查是否在两个列表中都不存在 ---
     if (!hasLeadSeal && !hasNameplate) {
-        return "其他情况！请检查输入或联系技术员确认。";
+        return "其他情况！请联系技术员确认。";
     }
     
     // --- 返回结果 ---
@@ -108,15 +134,18 @@ function check() {
         return;
     }
     
-    // 增加使用次数
+    // 增加本地使用次数
     incrementUsageCount();
+    
+    // 记录到全局计数器
+    recordGlobalUsage();
     
     const customerName = "";
     const productName = "阀体";
     const result = 阀体产品检测(partNumber, customerName, productName);
     document.getElementById('result').innerText = result;
     
-    if (result === "其他情况！请检查输入或联系技术员确认。") {
+    if (result === "其他情况！请联系技术员确认。") {
         document.getElementById('result').className = "result warning";
     } else {
         document.getElementById('result').className = "result";
