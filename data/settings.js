@@ -11,8 +11,8 @@ const CONFIG = {
     
     // 系统模式：'production'=生产环境, 'development'=开发环境, 'test'=测试环境
     // SYSTEM_MODE: 'production'
-	SYSTEM_MODE: 'development'
-	// SYSTEM_MODE: 'test'
+	// SYSTEM_MODE: 'development'
+	SYSTEM_MODE: 'test'
 };
 
 // 根据模式自动设置配置（可选）
