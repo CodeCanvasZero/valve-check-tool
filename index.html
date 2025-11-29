@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KDSHT阀体检测</title>
     <link rel="stylesheet" href="css/style.css">
-    
-    <!-- 添加这个免费的统计脚本 -->
-    <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 </head>
 <body>
     <div class="container">
@@ -42,9 +39,12 @@
         
         <div class="footer">
             <p><strong>阀体检测工具</strong></p>
-            <p>版本：v1.4.0 | 更新日期：2025-11-26</p>
+            <p>版本：v1.5.0 | 更新日期：2025-11-26</p>
+            <p id="systemStatus" style="font-size: 11px; color: #999;">
+                <!-- 系统状态会在这里显示 -->
+            </p>
             <p>
-                📊 总使用次数：<span id="busuanzi_value_site_pv">加载中...</span> 次 | 
+                📊 总使用次数：<span id="totalCount">加载中...</span> 次 | 
                 💻 你的使用：<span id="localCount">0</span> 次
             </p>
             <p>
@@ -62,6 +62,8 @@
         </div>
     </div>
 
+    <!-- 按顺序加载：先系统配置，再业务数据，最后逻辑 -->
+    <script src="data/settings.js"></script>
     <script src="data/config.js"></script>
     <script src="js/script.js"></script>
 </body>

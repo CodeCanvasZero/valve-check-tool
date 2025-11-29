@@ -362,7 +362,7 @@ function check() {
     
     // 检查是否启用检测功能
     if (CONFIG.ENABLE_DETECTION !== 1) {
-        document.getElementById('result').innerText = "⚠️ 系统维护中，检测功能已禁用，请联系管理员。";
+        document.getElementById('result').innerText = "⚠️ 检测功能已禁用，请联系管理员。";
         document.getElementById('result').className = "result warning";
         return;
     }
@@ -379,7 +379,7 @@ function check() {
     
     if (result === "其他情况！请联系技术员确认。") {
         document.getElementById('result').className = "result warning";
-    } else  {
+    } else {
         document.getElementById('result').className = "result";
     }
     
@@ -422,9 +422,27 @@ document.addEventListener('DOMContentLoaded', function() {
         resetMyCount();
     });
     
+    // 显示系统状态
+    const statusElement = document.getElementById('systemStatus');
+    if (statusElement) {
+        const modeText = {
+            'production': '生产环境',
+            'development': '开发环境',
+            'test': '测试环境'
+        };
+        
+        const detectionStatus = CONFIG.ENABLE_DETECTION ? '🟢' : '🔴';
+        const countingStatus = CONFIG.ENABLE_COUNTING ? '🟢' : '🔴';
+        
+        statusElement.innerHTML = `系统模式：${modeText[CONFIG.SYSTEM_MODE]} | 
+                                  检测功能：${detectionStatus} | 
+                                  计数功能：${countingStatus}`;
+    }
+    
     // 在控制台显示当前配置（调试用）
     if (CONFIG.ENABLE_DEBUG === 1) {
         console.log('=== 系统配置 ===');
+        console.log('系统模式:', CONFIG.SYSTEM_MODE);
         console.log('检测功能:', CONFIG.ENABLE_DETECTION ? '启用' : '禁用');
         console.log('计数功能:', CONFIG.ENABLE_COUNTING ? '启用' : '禁用');
         console.log('调试模式:', CONFIG.ENABLE_DEBUG ? '启用' : '禁用');
@@ -438,4 +456,3 @@ document.addEventListener('DOMContentLoaded', function() {
         resultDiv.className = "result warning";
     }
 });
-   
