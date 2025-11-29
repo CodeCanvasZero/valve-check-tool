@@ -362,7 +362,7 @@ function check() {
     
     // 检查是否启用检测功能
     if (CONFIG.ENABLE_DETECTION !== 1) {
-        document.getElementById('result').innerText = "⚠️ 检测功能已禁用，请联系管理员。";
+        document.getElementById('result').innerText = "⚠️ 系统维护中，检测功能已禁用，请联系管理员。";
         document.getElementById('result').className = "result warning";
         return;
     }
