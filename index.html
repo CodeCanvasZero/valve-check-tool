@@ -5,11 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KDSHT阀体检测</title>
     <link rel="stylesheet" href="css/style.css">
+    
+    <!-- 添加农历库CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/lunar-javascript@1.6.14/lunar.min.js"></script>
 </head>
 <body>
     <div class="container">
         <h1>KDSHT阀体检测</h1>
         <div class="subtitle">输入零件号，自动检测是否需要打孔</div>
+        
+        <!-- 添加农历信息显示区域 -->
+        <div id="lunarInfo" class="lunar-info">
+            <div class="lunar-loading">农历信息加载中...</div>
+        </div>
         
         <div class="info-row">
             <div class="info-label">客户名称</div>
@@ -39,7 +47,7 @@
         
         <div class="footer">
             <p><strong>阀体检测工具</strong></p>
-            <p>版本：v1.5.0 | 更新日期：</p>
+            <p>版本：v1.6.0 | 更新日期：2025-11-26</p>
             <p id="systemStatus" style="font-size: 11px; color: #999;">
                 <!-- 系统状态会在这里显示 -->
             </p>
