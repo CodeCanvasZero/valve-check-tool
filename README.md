@@ -1,10 +1,9 @@
 # KDSHT
 
 ## 功能说明
-- 输入零件号自动检测是否需要打铅封孔和铭牌孔
+- 输入零件号自动检测要求
 - 统计使用次数
-- 本地使用次数记录
-- 移动端友好设计
+- 本地使用次数记数
 
 ## 版本历史
 - v1.4.0 : 添加使用统计
@@ -15,4 +14,3 @@
 查看详细统计：https://github.com/CodeCanvasZero/valve-check-tool/issues/1
 
 ## 部署地址
-https://codecanvaszero.github.io/valve-check-tool/
