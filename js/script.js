@@ -12,6 +12,69 @@ let lastGitHubCount = 0;    // 最后一次从GitHub获取的计数
 let secretClickCount = 0;
 let secretClickTimer = null;
 
+// 农历信息显示功能
+function initLunarInfo() {
+    try {
+        const lunarInfo = document.getElementById('lunarInfo');
+        if (!lunarInfo) return;
+        
+        const now = new Date();
+        const solar = Lunar.fromDate(now);
+        const lunar = solar.getLunar();
+        
+        // 获取节日信息
+        let festivals = [];
+        const lunarFestivals = lunar.getFestivals();
+        const solarFestivals = solar.getFestivals();
+        
+        if (lunarFestivals.length > 0) {
+            festivals.push(...lunarFestivals);
+        }
+        if (solarFestivals.length > 0) {
+            festivals.push(...solarFestivals);
+        }
+        
+        // 获取节气信息
+        const jieQi = lunar.getJieQi();
+        
+        // 构建显示内容
+        let lunarHTML = '<div class="lunar-content">';
+        lunarHTML += `<div class="lunar-date">🌙 ${lunar.getMonthInChinese()}月${lunar.getDayInChinese()}日</div>`;
+        lunarHTML += `<div class="lunar-details">`;
+        lunarHTML += `${lunar.getYearInChinese()}年 ${lunar.getShengXiao()}年`;
+        
+        // 添加节日信息
+        if (festivals.length > 0) {
+            lunarHTML += `<div class="lunar-festival">🎉 ${festivals.join('、')}</div>`;
+        }
+        
+        // 添加节气信息
+        if (jieQi) {
+            lunarHTML += `<div class="lunar-festival">🍃 ${jieQi}</div>`;
+        }
+        
+        // 添加干支信息
+        lunarHTML += `<div class="lunar-ganzhi">`;
+        lunarHTML += `天干地支：${lunar.getGanZhi()} | `;
+        lunarHTML += `星期${'日一二三四五六'.charAt(solar.getWeek())}`;
+        lunarHTML += `</div>`;
+        
+        lunarHTML += `</div></div>`;
+        
+        lunarInfo.innerHTML = lunarHTML;
+        
+        // 每分钟更新一次
+        setTimeout(initLunarInfo, 60000);
+        
+    } catch (error) {
+        console.log('农历信息加载失败:', error);
+        const lunarInfo = document.getElementById('lunarInfo');
+        if (lunarInfo) {
+            lunarInfo.innerHTML = '<div class="lunar-content"><div class="lunar-date">🌅 今日美好</div></div>';
+        }
+    }
+}
+
 // 初始化使用次数
 function initUsageCount() {
     // 当前用户的使用次数
@@ -256,7 +319,7 @@ function handleSecretClick() {
     showSecretClickFeedback();
     
     // 检查是否达到20次
-    if (secretClickCount >= 20) {
+   if (secretClickCount >= 20) {
         // 达到20次，执行跳转
         secretClickCount = 0;
         if (secretClickTimer) {
@@ -312,7 +375,6 @@ function 阀体产品检测(partNumber, customerName, productName) {
             break;
         }
     }
-    
     // --- 检查铭牌孔并获取系列信息 ---
     for (let i = 0; i < nameplateData.length; i++) {
         for (let j = 1; j < nameplateData[i].length; j++) {
@@ -366,7 +428,6 @@ function check() {
         document.getElementById('result').className = "result warning";
         return;
     }
-    
     // 增加使用次数（如果启用计数）
     if (CONFIG.ENABLE_COUNTING === 1) {
         incrementUsageCount();
@@ -403,6 +464,9 @@ function reset() {
 
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', function() {
+    // 初始化农历信息
+    initLunarInfo();
+    
     // 初始化使用次数
     initUsageCount();
     
@@ -421,7 +485,6 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         resetMyCount();
     });
-    
     // 显示系统状态
     const statusElement = document.getElementById('systemStatus');
     if (statusElement) {
@@ -448,7 +511,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('调试模式:', CONFIG.ENABLE_DEBUG ? '启用' : '禁用');
         console.log('==================');
     }
-    
+
     // 如果检测功能被禁用，在页面上显示提示
     if (CONFIG.ENABLE_DETECTION !== 1) {
         const resultDiv = document.getElementById('result');
