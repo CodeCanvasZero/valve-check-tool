@@ -4,10 +4,10 @@ const CONFIG = {
     ENABLE_DETECTION: 0,
     
     // 是否记录使用次数：1=启用，0=禁用
-    ENABLE_COUNTING: 1,
+    ENABLE_COUNTING: 0,
     
     // 是否显示调试信息：1=启用，0=禁用
-    ENABLE_DEBUG: 0
+    ENABLE_DEBUG: 1
 };
 
 // 铅封孔数据配置
