@@ -28,6 +28,69 @@ h1 {
     font-size: 14px; 
 }
 
+/* 农历信息样式 */
+.lunar-info {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.lunar-info::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+    animation: lunarShine 3s infinite;
+}
+
+@keyframes lunarShine {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.lunar-content {
+    position: relative;
+    z-index: 1;
+}
+
+.lunar-date {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.lunar-details {
+    font-size: 14px;
+    opacity: 0.9;
+    line-height: 1.4;
+}
+
+.lunar-festival {
+    color: #ffeb3b;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+.lunar-ganzhi {
+    font-size: 12px;
+    opacity: 0.8;
+    margin-top: 3px;
+}
+
+.lunar-loading {
+    color: rgba(255,255,255,0.8);
+    font-style: italic;
+}
+
 .info-row { 
     display: flex; 
     align-items: center; 
@@ -152,6 +215,19 @@ button:hover {
     
     h1 { 
         font-size: 20px; 
+    }
+    
+    .lunar-info {
+        padding: 12px;
+        margin-bottom: 15px;
+    }
+    
+    .lunar-date {
+        font-size: 16px;
+    }
+    
+    .lunar-details {
+        font-size: 13px;
     }
     
     .info-label { 
