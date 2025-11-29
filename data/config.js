@@ -1,7 +1,7 @@
 // 系统配置开关
 const CONFIG = {
     // 是否启用检测功能：1=启用，0=禁用
-    ENABLE_DETECTION: 1,
+    ENABLE_DETECTION: 0,
     
     // 是否记录使用次数：1=启用，0=禁用
     ENABLE_COUNTING: 1,
