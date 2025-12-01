@@ -9,10 +9,10 @@ const CONFIG = {
     // 是否显示调试信息：1=启用，0=禁用
     ENABLE_DEBUG: 0,
     
-    // 系统模式：'production'=生产环境, 'development'=开发环境, 'test'=测试环境
-    // SYSTEM_MODE: 'production'
-	// SYSTEM_MODE: 'development'
-	SYSTEM_MODE: 'test'
+    // 系统模式：生产环境/开发环境/测试环境
+    SYSTEM_MODE: 'production'
+   	// SYSTEM_MODE: 'development'
+   	//SYSTEM_MODE: 'test'
 };
 
 // 根据模式自动设置配置（可选）
