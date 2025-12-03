@@ -192,7 +192,7 @@ function getGitHubUsageCount() {
                 updateUsageDisplay();
                 
                 console.log('✅ 从 GitHub 获取最新次数:', githubCount);
-                showTempMessage('统计数据已更新', 'success');
+                showTempMessage('数据已更新', 'success');
             }
         })
         .catch(error => {
