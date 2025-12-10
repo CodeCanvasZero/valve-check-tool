@@ -22,7 +22,7 @@ const USER_ACCESS = {
     
     // 允许访问的用户名单（区分大小写）
     ALLOWED_USERS: [
-        'admin',
+        'admin0',
         '锦鲤',
         '张树东',
         '蒋冰伟',
