@@ -18,7 +18,7 @@ const CONFIG = {
 // 用户访问控制配置
 const USER_ACCESS = {
     // 是否启用用户白名单：1=启用，0=禁用
-    ENABLE_WHITELIST: 0,
+    ENABLE_WHITELIST: 1,
     
     // 允许访问的用户名单（区分大小写）
     ALLOWED_USERS: [
