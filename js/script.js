@@ -70,14 +70,15 @@ function toggleUsernameDisplay() {
     showTempMessage(`用户名${status}`, 'info');
 }
 
-// 更新用户头像图标状态
+// 更新用户头像图标状态🔒👤
 function updateUserIcon() {
     const userIcon = document.getElementById('userIcon');
     if (userIcon) {
         if (hideUsername) {
             userIcon.classList.add('hidden');
             userIcon.title = '显示用户名';
-            userIcon.textContent = '🔒';
+            userIcon.textContent = '👤';
+
         } else {
             userIcon.classList.remove('hidden');
             userIcon.title = '隐藏用户名';
