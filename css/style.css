@@ -37,6 +37,17 @@ body {
 .user-icon {
     font-size: 14px;
     color: #6c757d;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.user-icon:hover {
+    color: #495057;
+    transform: scale(1.1);
+}
+
+.user-icon.hidden {
+    color: #007bff;
 }
 
 .user-name {
@@ -72,24 +83,6 @@ body {
 .btn-small:hover {
     background: #e9ecef;
     color: #495057;
-}
-
-.btn-toggle {
-    background: #f8f9fa;
-    border-color: #ced4da;
-    font-size: 12px;
-    padding: 3px 6px;
-}
-
-.btn-toggle:hover {
-    background: #e9ecef;
-    transform: scale(1.1);
-}
-
-.btn-toggle.active {
-    background: #007bff;
-    color: white;
-    border-color: #007bff;
 }
 
 .btn-logout {
