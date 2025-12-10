@@ -1,4 +1,4 @@
-# KDSHT
+﻿# KDSHT
 
 ## 功能说明
 - 输入零件号自动检测要求
@@ -9,6 +9,6 @@
 
 
 ## 使用统计
-查看详细统计：https://github.com/CodeCanvasZero/valve-check-tool/issues/1
+查看详细统计：
 
 ## 部署地址
