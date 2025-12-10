@@ -23,6 +23,10 @@ const USER_ACCESS = {
     // 允许访问的用户名单（区分大小写）
     ALLOWED_USERS: [
         'admin0',
+        '张三',
+        '李四',
+        '王五',
+        '赵六',
         '锦鲤',
         '张树东',
         '蒋冰伟',
@@ -32,7 +36,6 @@ const USER_ACCESS = {
         '李鑫',
         '马永杰',
         '董平发',
-        '陈三',
         '刘少威',
         '何峰',
         '杨渊',
@@ -46,6 +49,18 @@ const USER_ACCESS = {
     
     // 未授权时的提示信息
     UNAUTHORIZED_MESSAGE: '访问被拒绝：您不在授权用户名单中，请联系管理员。'
+};
+
+// 用户界面配置
+const USER_UI = {
+    // 是否默认隐藏用户名：true=隐藏，false=显示
+    DEFAULT_HIDE_USERNAME: false,
+    
+    // 隐藏时显示的字符
+    HIDDEN_CHAR: '*',
+    
+    // 隐藏时显示的字符数量
+    HIDDEN_LENGTH: 3
 };
 
 // 根据模式自动设置配置（可选）
