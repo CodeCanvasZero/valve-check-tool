@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+哭<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -38,12 +38,11 @@
         <!-- 用户信息栏 - 紧凑版 -->
         <div class="user-bar">
             <div class="user-info">
-                <span class="user-icon">👤</span>
+                <span class="user-icon" id="userIcon" onclick="toggleUsernameDisplay()" title="点击切换用户名显示">👤</span>
                 <span class="user-name" id="currentUserName">加载中...</span>
                 <span class="user-stats" id="userStats">今日：0次 | 总计：0次</span>
             </div>
             <div class="user-actions">
-                <button class="btn-small btn-toggle" id="toggleUsernameBtn" onclick="toggleUsernameDisplay()" title="切换用户名显示">👁️</button>
                 <button class="btn-small" onclick="openSwitchUserModal()">切换</button>
                 <button class="btn-small btn-logout" onclick="logout()">退出</button>
             </div>
