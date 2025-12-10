@@ -59,8 +59,8 @@ function toggleUsernameDisplay() {
     // 保存设置到本地存储
     localStorage.setItem(USER_SYSTEM_CONFIG.USERNAME_DISPLAY_KEY, hideUsername.toString());
     
-    // 更新按钮状态
-    updateToggleButton();
+    // 更新头像图标状态
+    updateUserIcon();
     
     // 更新用户名显示
     updateUserDisplay();
@@ -70,18 +70,18 @@ function toggleUsernameDisplay() {
     showTempMessage(`用户名${status}`, 'info');
 }
 
-// 更新切换按钮状态
-function updateToggleButton() {
-    const toggleBtn = document.getElementById('toggleUsernameBtn');
-    if (toggleBtn) {
+// 更新用户头像图标状态
+function updateUserIcon() {
+    const userIcon = document.getElementById('userIcon');
+    if (userIcon) {
         if (hideUsername) {
-            toggleBtn.classList.add('active');
-            toggleBtn.title = '显示用户名';
-            toggleBtn.textContent = '🔒';
+            userIcon.classList.add('hidden');
+            userIcon.title = '显示用户名';
+            userIcon.textContent = '🔒';
         } else {
-            toggleBtn.classList.remove('active');
-            toggleBtn.title = '隐藏用户名';
-            toggleBtn.textContent = '👁️';
+            userIcon.classList.remove('hidden');
+            userIcon.title = '隐藏用户名';
+            userIcon.textContent = '👤';
         }
     }
 }
@@ -94,8 +94,8 @@ function initUsernameDisplay() {
         hideUsername = savedSetting === 'true';
     }
     
-    // 更新按钮状态
-    updateToggleButton();
+    // 更新头像图标状态
+    updateUserIcon();
 }
 
 // 初始化用户系统
