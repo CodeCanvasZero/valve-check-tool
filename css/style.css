@@ -14,6 +14,197 @@ body {
     box-shadow: 0 0 10px rgba(0,0,0,0.1); 
 }
 
+/* 用户系统样式 - 紧凑版 */
+.user-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8f9fa;
+    color: #6c757d;
+    padding: 8px 15px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    border: 1px solid #e9ecef;
+    font-size: 12px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.user-icon {
+    font-size: 14px;
+    color: #6c757d;
+}
+
+.user-name {
+    font-weight: 500;
+    font-size: 13px;
+    color: #495057;
+}
+
+.user-stats {
+    font-size: 11px;
+    color: #6c757d;
+    background: #e9ecef;
+    padding: 1px 6px;
+    border-radius: 10px;
+}
+
+.user-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.btn-small {
+    padding: 3px 8px;
+    font-size: 11px;
+    background: transparent;
+    color: #6c757d;
+    border: 1px solid #dee2e6;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-small:hover {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.btn-logout {
+    color: #dc3545;
+    border-color: #f5c6cb;
+}
+
+.btn-logout:hover {
+    background: #f8d7da;
+    color: #dc3545;
+}
+
+/* 模态框样式 - 缩小版 */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.4);
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background-color: white;
+    margin: 20% auto;
+    padding: 20px;
+    border-radius: 6px;
+    width: 90%;
+    max-width: 320px;
+    box-shadow: 0 3px 15px rgba(0,0,0,0.2);
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from { 
+        transform: translateY(-30px);
+        opacity: 0;
+    }
+    to { 
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    color: #495057;
+    text-align: center;
+    font-size: 18px;
+}
+
+.modal-content p {
+    color: #6c757d;
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 13px;
+}
+
+.modal-content input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.recent-users {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e9ecef;
+}
+
+.recent-users p {
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.user-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.user-item:hover {
+    background: #e9ecef;
+    transform: translateX(3px);
+}
+
+.user-item-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-item-name {
+    font-weight: 500;
+    color: #495057;
+    font-size: 13px;
+}
+
+.user-item-stats {
+    font-size: 11px;
+    color: #6c757d;
+}
+
+.user-item-action {
+    font-size: 11px;
+    color: #007bff;
+}
+
 h1 { 
     text-align: center; 
     color: #333; 
@@ -26,69 +217,6 @@ h1 {
     color: #666; 
     margin-bottom: 30px; 
     font-size: 14px; 
-}
-
-/* 农历信息样式 */
-.lunar-info {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    text-align: center;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-    position: relative;
-    overflow: hidden;
-}
-
-.lunar-info::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
-    animation: lunarShine 3s infinite;
-}
-
-@keyframes lunarShine {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.lunar-content {
-    position: relative;
-    z-index: 1;
-}
-
-.lunar-date {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-
-.lunar-details {
-    font-size: 14px;
-    opacity: 0.9;
-    line-height: 1.4;
-}
-
-.lunar-festival {
-    color: #ffeb3b;
-    font-weight: bold;
-    margin-top: 5px;
-}
-
-.lunar-ganzhi {
-    font-size: 12px;
-    opacity: 0.8;
-    margin-top: 3px;
-}
-
-.lunar-loading {
-    color: rgba(255,255,255,0.8);
-    font-style: italic;
 }
 
 .info-row { 
@@ -213,21 +341,31 @@ button:hover {
         padding: 15px; 
     }
     
+    .user-bar {
+        flex-direction: column;
+        gap: 6px;
+        padding: 8px 10px;
+    }
+    
+    .user-info {
+        font-size: 11px;
+    }
+    
+    .user-name {
+        font-size: 12px;
+    }
+    
+    .user-stats {
+        font-size: 10px;
+    }
+    
+    .btn-small {
+        padding: 2px 6px;
+        font-size: 10px;
+    }
+    
     h1 { 
         font-size: 20px; 
-    }
-    
-    .lunar-info {
-        padding: 12px;
-        margin-bottom: 15px;
-    }
-    
-    .lunar-date {
-        font-size: 16px;
-    }
-    
-    .lunar-details {
-        font-size: 13px;
     }
     
     .info-label { 
@@ -258,5 +396,24 @@ button:hover {
     .result { 
         padding: 12px; 
         font-size: 14px; 
+    }
+    
+    .modal-content {
+        margin: 25% auto;
+        padding: 15px;
+        max-width: 280px;
+    }
+    
+    .modal-content h2 {
+        font-size: 16px;
+    }
+    
+    .modal-content p {
+        font-size: 12px;
+    }
+    
+    .modal-content input {
+        padding: 8px;
+        font-size: 13px;
     }
 }

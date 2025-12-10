@@ -3,6 +3,13 @@ const GITHUB_OWNER = 'CodeCanvasZero';
 const GITHUB_REPO = 'valve-check-tool';
 const ISSUE_NUMBER = 1;
 
+// 用户系统配置
+const USER_SYSTEM_CONFIG = {
+    STORAGE_KEY: 'valveCheckUserSystem',
+    CURRENT_USER_KEY: 'valveCheckCurrentUser',
+    MAX_RECENT_USERS: 5
+};
+
 // 使用次数记录功能
 let localUsageCount = 0;    // 当前用户的使用次数
 let totalUsageCount = 0;    // 所有用户的总使用次数（本地缓存）
@@ -12,75 +19,286 @@ let lastGitHubCount = 0;    // 最后一次从GitHub获取的计数
 let secretClickCount = 0;
 let secretClickTimer = null;
 
-// 农历信息显示功能
-function initLunarInfo() {
-    try {
-        const lunarInfo = document.getElementById('lunarInfo');
-        if (!lunarInfo) return;
-        
-        const now = new Date();
-        const solar = Lunar.fromDate(now);
-        const lunar = solar.getLunar();
-        
-        // 获取节日信息
-        let festivals = [];
-        const lunarFestivals = lunar.getFestivals();
-        const solarFestivals = solar.getFestivals();
-        
-        if (lunarFestivals.length > 0) {
-            festivals.push(...lunarFestivals);
-        }
-        if (solarFestivals.length > 0) {
-            festivals.push(...solarFestivals);
-        }
-        
-        // 获取节气信息
-        const jieQi = lunar.getJieQi();
-        
-        // 构建显示内容
-        let lunarHTML = '<div class="lunar-content">';
-        lunarHTML += `<div class="lunar-date">🌙 ${lunar.getMonthInChinese()}月${lunar.getDayInChinese()}日</div>`;
-        lunarHTML += `<div class="lunar-details">`;
-        lunarHTML += `${lunar.getYearInChinese()}年 ${lunar.getShengXiao()}年`;
-        
-        // 添加节日信息
-        if (festivals.length > 0) {
-            lunarHTML += `<div class="lunar-festival">🎉 ${festivals.join('、')}</div>`;
-        }
-        
-        // 添加节气信息
-        if (jieQi) {
-            lunarHTML += `<div class="lunar-festival">🍃 ${jieQi}</div>`;
-        }
-        
-        // 添加干支信息
-        lunarHTML += `<div class="lunar-ganzhi">`;
-        lunarHTML += `天干地支：${lunar.getGanZhi()} | `;
-        lunarHTML += `星期${'日一二三四五六'.charAt(solar.getWeek())}`;
-        lunarHTML += `</div>`;
-        
-        lunarHTML += `</div></div>`;
-        
-        lunarInfo.innerHTML = lunarHTML;
-        
-        // 每分钟更新一次
-        setTimeout(initLunarInfo, 60000);
-        
-    } catch (error) {
-        console.log('农历信息加载失败:', error);
-        const lunarInfo = document.getElementById('lunarInfo');
-        if (lunarInfo) {
-            lunarInfo.innerHTML = '<div class="lunar-content"><div class="lunar-date">🌅 今日美好</div></div>';
+// 用户系统功能
+let currentUser = null;
+let userSystem = {
+    users: {},
+    currentUser: null
+};
+
+// 初始化用户系统
+function initUserSystem() {
+    // 从本地存储加载用户数据
+    const savedData = localStorage.getItem(USER_SYSTEM_CONFIG.STORAGE_KEY);
+    if (savedData) {
+        try {
+            userSystem = JSON.parse(savedData);
+        } catch (e) {
+            console.error('用户数据解析失败:', e);
+            userSystem = { users: {}, currentUser: null };
         }
     }
+    
+    // 检查是否有当前用户
+    const savedCurrentUser = localStorage.getItem(USER_SYSTEM_CONFIG.CURRENT_USER_KEY);
+    if (savedCurrentUser && userSystem.users[savedCurrentUser]) {
+        currentUser = savedCurrentUser;
+        userSystem.currentUser = savedCurrentUser;
+        updateUserDisplay();
+        hideLoginModal();
+    } else {
+        showLoginModal();
+    }
+}
+
+// 显示登录模态框
+function showLoginModal() {
+    const modal = document.getElementById('loginModal');
+    modal.style.display = 'block';
+    
+    // 显示最近使用的用户
+    showRecentUsers();
+    
+    // 聚焦输入框
+    setTimeout(() => {
+        document.getElementById('usernameInput').focus();
+    }, 100);
+}
+
+// 隐藏登录模态框
+function hideLoginModal() {
+    const modal = document.getElementById('loginModal');
+    modal.style.display = 'none';
+}
+
+// 显示最近使用的用户
+function showRecentUsers() {
+    const recentUsersList = document.getElementById('recentUsersList');
+    if (!recentUsersList) return;
+    
+    const users = Object.values(userSystem.users);
+    const recentUsers = users
+        .sort((a, b) => new Date(b.lastLogin) - new Date(a.lastLogin))
+        .slice(0, USER_SYSTEM_CONFIG.MAX_RECENT_USERS);
+    
+    if (recentUsers.length === 0) {
+        recentUsersList.innerHTML = '<p style="color: #999; font-size: 12px;">暂无最近用户</p>';
+        return;
+    }
+    
+    let html = '';
+    recentUsers.forEach(user => {
+        html += `
+            <div class="user-item" onclick="selectRecentUser('${user.name}')">
+                <div class="user-item-info">
+                    <span class="user-item-name">${user.name}</span>
+                    <span class="user-item-stats">使用${user.totalUsage}次</span>
+                </div>
+                <span class="user-item-action">点击登录</span>
+            </div>
+        `;
+    });
+    
+    recentUsersList.innerHTML = html;
+}
+
+// 选择最近用户
+function selectRecentUser(username) {
+    document.getElementById('usernameInput').value = username;
+    document.getElementById('usernameInput').focus();
+}
+
+// 用户登录
+function login() {
+    const usernameInput = document.getElementById('usernameInput');
+    const username = usernameInput.value.trim();
+    
+    if (!username) {
+        showTempMessage('请输入用户名', 'warning');
+        return;
+    }
+    
+    // 创建或更新用户信息
+    if (!userSystem.users[username]) {
+        userSystem.users[username] = {
+            name: username,
+            loginCount: 0,
+            lastLogin: null,
+            totalUsage: 0,
+            todayUsage: 0,
+            createDate: new Date().toISOString()
+        };
+    }
+    
+    // 更新登录信息
+    const user = userSystem.users[username];
+    user.loginCount++;
+    user.lastLogin = new Date().toISOString();
+    
+    // 检查是否是新的一天，重置今日使用次数
+    const today = new Date().toDateString();
+    const lastLoginDate = new Date(user.lastLogin).toDateString();
+    if (today !== lastLoginDate) {
+        user.todayUsage = 0;
+    }
+    
+    // 设置当前用户
+    currentUser = username;
+    userSystem.currentUser = username;
+    
+    // 保存到本地存储
+    saveUserSystem();
+    localStorage.setItem(USER_SYSTEM_CONFIG.CURRENT_USER_KEY, username);
+    
+    // 更新界面
+    updateUserDisplay();
+    hideLoginModal();
+    
+    // 显示欢迎消息
+    showTempMessage(`欢迎回来，${username}！`, 'success');
+    
+    // 初始化使用次数
+    initUsageCount();
+}
+
+// 用户退出
+function logout() {
+    if (confirm('确定要退出登录吗？')) {
+        currentUser = null;
+        userSystem.currentUser = null;
+        localStorage.removeItem(USER_SYSTEM_CONFIG.CURRENT_USER_KEY);
+        
+        showLoginModal();
+        showTempMessage('已安全退出', 'info');
+    }
+}
+
+// 打开切换用户模态框
+function openSwitchUserModal() {
+    const modal = document.getElementById('switchUserModal');
+    modal.style.display = 'block';
+    
+    // 显示用户列表
+    showUsersList();
+}
+
+// 关闭切换用户模态框
+function closeSwitchUserModal() {
+    const modal = document.getElementById('switchUserModal');
+    modal.style.display = 'none';
+}
+
+// 显示用户列表
+function showUsersList() {
+    const usersList = document.getElementById('usersList');
+    if (!usersList) return;
+    
+    const users = Object.values(userSystem.users);
+    
+    if (users.length === 0) {
+        usersList.innerHTML = '<p style="color: #999; text-align: center;">暂无用户</p>';
+        return;
+    }
+    
+    let html = '';
+    users.forEach(user => {
+        const isCurrentUser = user.name === currentUser;
+        html += `
+            <div class="user-item" onclick="switchToUser('${user.name}')">
+                <div class="user-item-info">
+                    <span class="user-item-name">${user.name}</span>
+                    <span class="user-item-stats">今日：${user.todayUsage}次 | 总计：${user.totalUsage}次</span>
+                </div>
+                <span class="user-item-action">${isCurrentUser ? '当前用户' : '切换'}</span>
+            </div>
+        `;
+    });
+    
+    usersList.innerHTML = html;
+}
+
+// 切换到指定用户
+function switchToUser(username) {
+    if (username === currentUser) {
+        closeSwitchUserModal();
+        return;
+    }
+    
+    // 更新用户登录信息
+    const user = userSystem.users[username];
+    user.loginCount++;
+    user.lastLogin = new Date().toISOString();
+    
+    // 检查是否是新的一天
+    const today = new Date().toDateString();
+    const lastLoginDate = new Date(user.lastLogin).toDateString();
+    if (today !== lastLoginDate) {
+        user.todayUsage = 0;
+    }
+    
+    // 切换用户
+    currentUser = username;
+    userSystem.currentUser = username;
+    
+    // 保存数据
+    saveUserSystem();
+    localStorage.setItem(USER_SYSTEM_CONFIG.CURRENT_USER_KEY, username);
+    
+    // 更新界面
+    updateUserDisplay();
+    closeSwitchUserModal();
+    
+    // 显示消息
+    showTempMessage(`已切换到用户：${username}`, 'success');
+    
+    // 重新初始化使用次数
+    initUsageCount();
+}
+
+// 更新用户显示
+function updateUserDisplay() {
+    if (!currentUser || !userSystem.users[currentUser]) return;
+    
+    const user = userSystem.users[currentUser];
+    const userNameElement = document.getElementById('currentUserName');
+    const userStatsElement = document.getElementById('userStats');
+    
+    if (userNameElement) {
+        userNameElement.textContent = user.name;
+    }
+    
+    if (userStatsElement) {
+        userStatsElement.textContent = `今日：${user.todayUsage}次 | 总计：${user.totalUsage}次`;
+    }
+}
+
+// 保存用户系统
+function saveUserSystem() {
+    localStorage.setItem(USER_SYSTEM_CONFIG.STORAGE_KEY, JSON.stringify(userSystem));
+}
+
+// 增加用户使用次数
+function incrementUserUsage() {
+    if (!currentUser || !userSystem.users[currentUser]) return;
+    
+    const user = userSystem.users[currentUser];
+    user.totalUsage++;
+    user.todayUsage++;
+    
+    saveUserSystem();
+    updateUserDisplay();
 }
 
 // 初始化使用次数
 function initUsageCount() {
     // 当前用户的使用次数
-    const savedLocal = localStorage.getItem('valveCheckLocalUsage');
-    if (savedLocal) {
-        localUsageCount = parseInt(savedLocal);
+    if (currentUser && userSystem.users[currentUser]) {
+        localUsageCount = userSystem.users[currentUser].totalUsage;
+    } else {
+        const savedLocal = localStorage.getItem('valveCheckLocalUsage');
+        if (savedLocal) {
+            localUsageCount = parseInt(savedLocal);
+        }
     }
     
     // 从本地存储获取总次数缓存
@@ -113,6 +331,9 @@ function recordToGitHub() {
     if (CONFIG.ENABLE_COUNTING !== 1) {
         return;
     }
+    
+    // 增加用户使用次数
+    incrementUserUsage();
     
     // 先更新本地显示
     totalUsageCount++;
@@ -223,7 +444,7 @@ function refreshTotalCount() {
     }, 2000);
 }
 
-// 显示临时消息
+// 显示临时消息 - 更紧凑的样式
 function showTempMessage(message, type = 'success') {
     const existingMsg = document.getElementById('tempMessage');
     if (existingMsg) {
@@ -234,17 +455,17 @@ function showTempMessage(message, type = 'success') {
     msgElement.id = 'tempMessage';
     msgElement.style.cssText = `
         position: fixed;
-        top: 20px;
+        top: 10px;
         left: 50%;
         transform: translateX(-50%);
         background: ${type === 'success' ? '#28a745' : type === 'warning' ? '#ffc107' : '#17a2b8'};
         color: white;
-        padding: 10px 20px;
-        border-radius: 5px;
+        padding: 6px 12px;
+        border-radius: 3px;
         z-index: 1000;
-        font-size: 14px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        transition: all 0.3s ease;
+        font-size: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: all 0.2s ease;
     `;
     msgElement.textContent = message;
     
@@ -252,13 +473,13 @@ function showTempMessage(message, type = 'success') {
     
     setTimeout(() => {
         msgElement.style.opacity = '0';
-        msgElement.style.transform = 'translateX(-50%) translateY(-20px)';
+        msgElement.style.transform = 'translateX(-50%) translateY(-15px)';
         setTimeout(() => {
             if (msgElement.parentNode) {
                 msgElement.remove();
             }
-        }, 300);
-    }, 3000);
+        }, 200);
+    }, 2000);
 }
 
 // 查看 GitHub 统计
@@ -266,25 +487,16 @@ function viewGitHubStats() {
     window.open(`https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/issues/${ISSUE_NUMBER}`, '_blank');
 }
 
-// 增加使用次数
-function incrementUsageCount() {
-    // 如果禁用计数，直接返回
-    if (CONFIG.ENABLE_COUNTING !== 1) {
-        return;
-    }
-    
-    localUsageCount++;
-    localStorage.setItem('valveCheckLocalUsage', localUsageCount.toString());
-    
-    // 记录到 GitHub
-    recordToGitHub();
-    
-    updateUsageDisplay();
-}
-
 // 重置个人计数
 function resetMyCount() {
     if (confirm('确定要重置你的使用次数吗？总次数不会重置。')) {
+        if (currentUser && userSystem.users[currentUser]) {
+            userSystem.users[currentUser].totalUsage = 0;
+            userSystem.users[currentUser].todayUsage = 0;
+            saveUserSystem();
+            updateUserDisplay();
+        }
+        
         localUsageCount = 0;
         localStorage.setItem('valveCheckLocalUsage', '0');
         updateUsageDisplay();
@@ -319,7 +531,7 @@ function handleSecretClick() {
     showSecretClickFeedback();
     
     // 检查是否达到20次
-   if (secretClickCount >= 20) {
+    if (secretClickCount >= 20) {
         // 达到20次，执行跳转
         secretClickCount = 0;
         if (secretClickTimer) {
@@ -415,6 +627,13 @@ function 阀体产品检测(partNumber, customerName, productName) {
 
 // 检测函数（添加配置检查）
 function check() {
+    // 检查用户是否已登录
+    if (!currentUser) {
+        showTempMessage('请先登录', 'warning');
+        showLoginModal();
+        return;
+    }
+    
     const partNumber = document.getElementById('partNumber').value.trim();
     if (!partNumber) {
         document.getElementById('result').innerText = "请输入零件号";
@@ -428,9 +647,10 @@ function check() {
         document.getElementById('result').className = "result warning";
         return;
     }
+    
     // 增加使用次数（如果启用计数）
     if (CONFIG.ENABLE_COUNTING === 1) {
-        incrementUsageCount();
+        recordToGitHub();
     }
     
     const customerName = "";
@@ -449,6 +669,7 @@ function check() {
         console.log('检测配置状态：', {
             检测功能: CONFIG.ENABLE_DETECTION ? '启用' : '禁用',
             计数功能: CONFIG.ENABLE_COUNTING ? '启用' : '禁用',
+            当前用户: currentUser,
             零件号: partNumber,
             结果: result
         });
@@ -464,14 +685,21 @@ function reset() {
 
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', function() {
-    // 初始化农历信息
-    initLunarInfo();
+    // 初始化用户系统
+    initUserSystem();
     
     // 初始化使用次数
     initUsageCount();
     
     // 初始化秘密按钮功能
     initSecretButton();
+    
+    // 支持回车键登录
+    document.getElementById('usernameInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            login();
+        }
+    });
     
     // 支持回车键检测
     document.getElementById('partNumber').addEventListener('keypress', function(e) {
@@ -480,11 +708,27 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    // 点击模态框外部关闭
+    window.onclick = function(event) {
+        const loginModal = document.getElementById('loginModal');
+        const switchUserModal = document.getElementById('switchUserModal');
+        
+        if (event.target === loginModal) {
+            // 登录模态框不允许点击外部关闭
+            return;
+        }
+        
+        if (event.target === switchUserModal) {
+            closeSwitchUserModal();
+        }
+    }
+    
     // 添加右键菜单重置使用次数（开发者功能）
     document.addEventListener('contextmenu', function(e) {
         e.preventDefault();
         resetMyCount();
     });
+    
     // 显示系统状态
     const statusElement = document.getElementById('systemStatus');
     if (statusElement) {

@@ -5,10 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KDSHT阀体检测</title>
     <link rel="stylesheet" href="css/style.css">
-    
 </head>
 <body>
+    <!-- 用户登录模态框 -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <h2>👤 用户登录</h2>
+            <p>请输入您的姓名开始使用</p>
+            <input type="text" id="usernameInput" placeholder="请输入姓名" maxlength="20" autofocus>
+            <div class="modal-buttons">
+                <button class="btn-primary" onclick="login()">登录</button>
+            </div>
+            <div class="recent-users">
+                <p>最近使用的用户：</p>
+                <div id="recentUsersList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 用户切换模态框 -->
+    <div id="switchUserModal" class="modal">
+        <div class="modal-content">
+            <h2>👥 切换用户</h2>
+            <div id="usersList"></div>
+            <div class="modal-buttons">
+                <button class="btn-secondary" onclick="closeSwitchUserModal()">取消</button>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
+        <!-- 用户信息栏 - 紧凑版 -->
+        <div class="user-bar">
+            <div class="user-info">
+                <span class="user-icon">👤</span>
+                <span class="user-name" id="currentUserName">加载中...</span>
+                <span class="user-stats" id="userStats">今日：0次 | 总计：0次</span>
+            </div>
+            <div class="user-actions">
+                <button class="btn-small" onclick="openSwitchUserModal()">切换</button>
+                <button class="btn-small btn-logout" onclick="logout()">退出</button>
+            </div>
+        </div>
+
         <h1>KDSHT阀体检测</h1>
         <div class="subtitle">输入零件号，自动检测是否需要打孔</div>
         
