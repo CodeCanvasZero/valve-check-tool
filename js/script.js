@@ -26,6 +26,17 @@ let userSystem = {
     currentUser: null
 };
 
+// 检查用户是否在白名单中
+function isUserAllowed(username) {
+    // 如果禁用白名单，所有用户都允许
+    if (USER_ACCESS.ENABLE_WHITELIST !== 1) {
+        return true;
+    }
+    
+    // 检查用户名是否在允许名单中
+    return USER_ACCESS.ALLOWED_USERS.includes(username);
+}
+
 // 初始化用户系统
 function initUserSystem() {
     // 从本地存储加载用户数据
@@ -42,10 +53,20 @@ function initUserSystem() {
     // 检查是否有当前用户
     const savedCurrentUser = localStorage.getItem(USER_SYSTEM_CONFIG.CURRENT_USER_KEY);
     if (savedCurrentUser && userSystem.users[savedCurrentUser]) {
-        currentUser = savedCurrentUser;
-        userSystem.currentUser = savedCurrentUser;
-        updateUserDisplay();
-        hideLoginModal();
+        // 验证当前用户是否仍在白名单中
+        if (isUserAllowed(savedCurrentUser)) {
+            currentUser = savedCurrentUser;
+            userSystem.currentUser = savedCurrentUser;
+            updateUserDisplay();
+            hideLoginModal();
+        } else {
+            // 当前用户被移出白名单，清除登录状态
+            localStorage.removeItem(USER_SYSTEM_CONFIG.CURRENT_USER_KEY);
+            currentUser = null;
+            userSystem.currentUser = null;
+            showLoginModal();
+            showTempMessage('您的访问权限已被更改，请重新登录', 'warning');
+        }
     } else {
         showLoginModal();
     }
@@ -56,7 +77,7 @@ function showLoginModal() {
     const modal = document.getElementById('loginModal');
     modal.style.display = 'block';
     
-    // 显示最近使用的用户
+    // 显示最近使用的用户（只显示白名单中的用户）
     showRecentUsers();
     
     // 聚焦输入框
@@ -77,7 +98,9 @@ function showRecentUsers() {
     if (!recentUsersList) return;
     
     const users = Object.values(userSystem.users);
-    const recentUsers = users
+    // 只显示在白名单中的用户
+    const allowedUsers = users.filter(user => isUserAllowed(user.name));
+    const recentUsers = allowedUsers
         .sort((a, b) => new Date(b.lastLogin) - new Date(a.lastLogin))
         .slice(0, USER_SYSTEM_CONFIG.MAX_RECENT_USERS);
     
@@ -115,6 +138,15 @@ function login() {
     
     if (!username) {
         showTempMessage('请输入用户名', 'warning');
+        return;
+    }
+    
+    // 检查用户是否在白名单中
+    if (!isUserAllowed(username)) {
+        showTempMessage(USER_ACCESS.UNAUTHORIZED_MESSAGE, 'warning');
+        // 清空输入框并重新聚焦
+        usernameInput.value = '';
+        usernameInput.focus();
         return;
     }
     
@@ -178,7 +210,7 @@ function openSwitchUserModal() {
     const modal = document.getElementById('switchUserModal');
     modal.style.display = 'block';
     
-    // 显示用户列表
+    // 显示用户列表（只显示白名单中的用户）
     showUsersList();
 }
 
@@ -194,14 +226,16 @@ function showUsersList() {
     if (!usersList) return;
     
     const users = Object.values(userSystem.users);
+    // 只显示在白名单中的用户
+    const allowedUsers = users.filter(user => isUserAllowed(user.name));
     
-    if (users.length === 0) {
-        usersList.innerHTML = '<p style="color: #999; text-align: center;">暂无用户</p>';
+    if (allowedUsers.length === 0) {
+        usersList.innerHTML = '<p style="color: #999; text-align: center;">暂无授权用户</p>';
         return;
     }
     
     let html = '';
-    users.forEach(user => {
+    allowedUsers.forEach(user => {
         const isCurrentUser = user.name === currentUser;
         html += `
             <div class="user-item" onclick="switchToUser('${user.name}')">
@@ -220,6 +254,13 @@ function showUsersList() {
 // 切换到指定用户
 function switchToUser(username) {
     if (username === currentUser) {
+        closeSwitchUserModal();
+        return;
+    }
+    
+    // 检查目标用户是否在白名单中
+    if (!isUserAllowed(username)) {
+        showTempMessage(USER_ACCESS.UNAUTHORIZED_MESSAGE, 'warning');
         closeSwitchUserModal();
         return;
     }
@@ -634,6 +675,13 @@ function check() {
         return;
     }
     
+    // 再次验证用户权限（双重检查）
+    if (!isUserAllowed(currentUser)) {
+        showTempMessage(USER_ACCESS.UNAUTHORIZED_MESSAGE, 'warning');
+        logout();
+        return;
+    }
+    
     const partNumber = document.getElementById('partNumber').value.trim();
     if (!partNumber) {
         document.getElementById('result').innerText = "请输入零件号";
@@ -669,7 +717,9 @@ function check() {
         console.log('检测配置状态：', {
             检测功能: CONFIG.ENABLE_DETECTION ? '启用' : '禁用',
             计数功能: CONFIG.ENABLE_COUNTING ? '启用' : '禁用',
+            白名单功能: USER_ACCESS.ENABLE_WHITELIST ? '启用' : '禁用',
             当前用户: currentUser,
+            用户授权: isUserAllowed(currentUser),
             零件号: partNumber,
             结果: result
         });
@@ -740,10 +790,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const detectionStatus = CONFIG.ENABLE_DETECTION ? '🟢' : '🔴';
         const countingStatus = CONFIG.ENABLE_COUNTING ? '🟢' : '🔴';
+        const whitelistStatus = USER_ACCESS.ENABLE_WHITELIST ? '🟢' : '🔴';
         
         statusElement.innerHTML = `系统模式：${modeText[CONFIG.SYSTEM_MODE]} | 
                                   检测功能：${detectionStatus} | 
-                                  计数功能：${countingStatus}`;
+                                  计数功能：${countingStatus} | 
+                                  白名单：${whitelistStatus}`;
     }
     
     // 在控制台显示当前配置（调试用）
@@ -753,6 +805,8 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('检测功能:', CONFIG.ENABLE_DETECTION ? '启用' : '禁用');
         console.log('计数功能:', CONFIG.ENABLE_COUNTING ? '启用' : '禁用');
         console.log('调试模式:', CONFIG.ENABLE_DEBUG ? '启用' : '禁用');
+        console.log('白名单功能:', USER_ACCESS.ENABLE_WHITELIST ? '启用' : '禁用');
+        console.log('允许用户:', USER_ACCESS.ALLOWED_USERS);
         console.log('==================');
     }
 
