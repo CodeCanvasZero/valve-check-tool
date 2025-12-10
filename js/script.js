@@ -7,7 +7,8 @@ const ISSUE_NUMBER = 1;
 const USER_SYSTEM_CONFIG = {
     STORAGE_KEY: 'valveCheckUserSystem',
     CURRENT_USER_KEY: 'valveCheckCurrentUser',
-    MAX_RECENT_USERS: 5
+    MAX_RECENT_USERS: 5,
+    USERNAME_DISPLAY_KEY: 'valveCheckUsernameDisplay'
 };
 
 // 使用次数记录功能
@@ -26,6 +27,9 @@ let userSystem = {
     currentUser: null
 };
 
+// 用户名显示状态
+let hideUsername = USER_UI.DEFAULT_HIDE_USERNAME;
+
 // 检查用户是否在白名单中
 function isUserAllowed(username) {
     // 如果禁用白名单，所有用户都允许
@@ -37,8 +41,68 @@ function isUserAllowed(username) {
     return USER_ACCESS.ALLOWED_USERS.includes(username);
 }
 
+// 获取显示的用户名（根据隐藏设置）
+function getDisplayUsername(username) {
+    if (!username) return '加载中...';
+    
+    if (hideUsername) {
+        return USER_UI.HIDDEN_CHAR.repeat(USER_UI.HIDDEN_LENGTH);
+    }
+    
+    return username;
+}
+
+// 切换用户名显示状态
+function toggleUsernameDisplay() {
+    hideUsername = !hideUsername;
+    
+    // 保存设置到本地存储
+    localStorage.setItem(USER_SYSTEM_CONFIG.USERNAME_DISPLAY_KEY, hideUsername.toString());
+    
+    // 更新按钮状态
+    updateToggleButton();
+    
+    // 更新用户名显示
+    updateUserDisplay();
+    
+    // 显示提示消息
+    const status = hideUsername ? '已隐藏' : '已显示';
+    showTempMessage(`用户名${status}`, 'info');
+}
+
+// 更新切换按钮状态
+function updateToggleButton() {
+    const toggleBtn = document.getElementById('toggleUsernameBtn');
+    if (toggleBtn) {
+        if (hideUsername) {
+            toggleBtn.classList.add('active');
+            toggleBtn.title = '显示用户名';
+            toggleBtn.textContent = '🔒';
+        } else {
+            toggleBtn.classList.remove('active');
+            toggleBtn.title = '隐藏用户名';
+            toggleBtn.textContent = '👁️';
+        }
+    }
+}
+
+// 初始化用户名显示设置
+function initUsernameDisplay() {
+    // 从本地存储加载用户名显示设置
+    const savedSetting = localStorage.getItem(USER_SYSTEM_CONFIG.USERNAME_DISPLAY_KEY);
+    if (savedSetting !== null) {
+        hideUsername = savedSetting === 'true';
+    }
+    
+    // 更新按钮状态
+    updateToggleButton();
+}
+
 // 初始化用户系统
 function initUserSystem() {
+    // 初始化用户名显示设置
+    initUsernameDisplay();
+    
     // 从本地存储加载用户数据
     const savedData = localStorage.getItem(USER_SYSTEM_CONFIG.STORAGE_KEY);
     if (savedData) {
@@ -298,17 +362,15 @@ function switchToUser(username) {
 
 // 更新用户显示
 function updateUserDisplay() {
-    if (!currentUser || !userSystem.users[currentUser]) return;
-    
-    const user = userSystem.users[currentUser];
+    const user = currentUser && userSystem.users[currentUser] ? userSystem.users[currentUser] : null;
     const userNameElement = document.getElementById('currentUserName');
     const userStatsElement = document.getElementById('userStats');
     
     if (userNameElement) {
-        userNameElement.textContent = user.name;
+        userNameElement.textContent = user ? getDisplayUsername(user.name) : '加载中...';
     }
     
-    if (userStatsElement) {
+    if (userStatsElement && user) {
         userStatsElement.textContent = `今日：${user.todayUsage}次 | 总计：${user.totalUsage}次`;
     }
 }
@@ -720,6 +782,7 @@ function check() {
             白名单功能: USER_ACCESS.ENABLE_WHITELIST ? '启用' : '禁用',
             当前用户: currentUser,
             用户授权: isUserAllowed(currentUser),
+            用户名隐藏: hideUsername,
             零件号: partNumber,
             结果: result
         });
@@ -807,6 +870,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('调试模式:', CONFIG.ENABLE_DEBUG ? '启用' : '禁用');
         console.log('白名单功能:', USER_ACCESS.ENABLE_WHITELIST ? '启用' : '禁用');
         console.log('允许用户:', USER_ACCESS.ALLOWED_USERS);
+        console.log('用户名隐藏:', hideUsername);
         console.log('==================');
     }
 
